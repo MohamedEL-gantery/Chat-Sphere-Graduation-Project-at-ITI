@@ -76,10 +76,12 @@ const userSchema = new mongoose.Schema(
     followers: {
       type: Array,
       default: [],
+      // [{ type: Schema.ObjectId, ref: 'User' }]
     },
     followings: {
       type: Array,
       default: [],
+      // [{ type: Schema.ObjectId, ref: 'User' }]
     },
     facebookId: String,
     googleId: String,
