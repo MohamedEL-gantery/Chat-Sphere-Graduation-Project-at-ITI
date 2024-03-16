@@ -1,14 +1,9 @@
 const mongoose = require('mongoose')
 const chatSchema = new mongoose.Schema({
 
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    secondId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    members: [
-        {
-            userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-            secondId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
-        }
-    ]
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' ,required: true},
+    secondId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' , required: true},
+   
 
 
 }, { timestamps: true })
