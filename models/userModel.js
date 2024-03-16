@@ -32,7 +32,10 @@ const userSchema = new mongoose.Schema(
         message: 'Password Are Not The Same',
       },
     },
-    photo: String,
+    photo: {
+      type: String,
+      default: 'default.jpg',
+    },
     age: {
       type: Number,
       validate: {
@@ -60,6 +63,7 @@ const userSchema = new mongoose.Schema(
       type: Date,
       validate: [validator.isDate, 'Enter A Valid Date'],
     },
+    location: String,
     isOnline: {
       type: Boolean,
       default: true,
@@ -73,7 +77,6 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    location: String,
     followers: {
       type: Array,
       default: [],
