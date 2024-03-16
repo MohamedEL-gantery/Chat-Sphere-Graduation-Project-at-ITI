@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
@@ -25,7 +26,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, 'PasswordConfirm Must Be Required'],
       validate: {
-        validator: (value) => {
+        validator: function (value) {
           return value === this.password;
         },
         message: 'Password Are Not The Same',
@@ -76,12 +77,10 @@ const userSchema = new mongoose.Schema(
     followers: {
       type: Array,
       default: [],
-      // [{ type: Schema.ObjectId, ref: 'User' }]
     },
     followings: {
       type: Array,
       default: [],
-      // [{ type: Schema.ObjectId, ref: 'User' }]
     },
     facebookId: String,
     googleId: String,
@@ -99,18 +98,63 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.pre('save', async function (next) {
-  if (!this.isModified(this.password)) return next();
+  if (!this.isModified('password')) return next();
 
   this.password = await bcrypt.hash(this.password, 12);
   this.passwordConfirm = undefined;
   next();
 });
 
-userSchema.methods.CheckPassword = async function (
+userSchema.pre('save', function (next) {
+  if (!this.isModified('password') || this.isNew) return next();
+
+  this.passwordChangedAt = Date.now();
+  next();
+});
+
+userSchema.methods.checkPassword = async function (
   candidatePassword,
   userPassword
 ) {
   return await bcrypt.compare(candidatePassword, userPassword);
+};
+
+userSchema.methods.changedPasswordAfter = function (JwtTimeStamp) {
+  if (this.passwordChangedAt) {
+    const timePasswordChanged = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+    return JwtTimeStamp < timePasswordChanged;
+  }
+  return false;
+};
+
+userSchema.methods.createVerifySignUpCode = function () {
+  const resetCode = Math.floor(1000 + Math.random() * 9000).toString();
+
+  this.signupResetCode = crypto
+    .createHash('sha256')
+    .update(resetCode)
+    .digest('hex');
+
+  this.signupResetExpires = Date.now() + 10 * 60 * 1000;
+  this.signupResetVerified = false;
+  return resetCode;
+};
+
+userSchema.methods.createResetCode = function () {
+  const resetCode = Math.floor(1000 + Math.random() * 9000).toString();
+
+  this.passwordResetCode = crypto
+    .createHash('sha256')
+    .update(resetCode)
+    .digest('hex');
+
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+  this.passwordResetVerified = false;
+
+  return resetCode;
 };
 
 const User = mongoose.model('User', userSchema);
