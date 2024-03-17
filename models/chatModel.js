@@ -2,7 +2,12 @@ const mongoose = require('mongoose');
 
 const chatSchema = new mongoose.Schema(
   {
-    members: Array,
+    members: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+      },
+    ],
     groupName: {
       type: String,
       trim: true,

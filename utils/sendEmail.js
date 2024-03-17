@@ -11,7 +11,7 @@ const sendEmail = async (option) => {
   });
 
   await transporter.sendMail({
-    from: `Chat <Chat@gmail.com>`,
+    from: `chatSphere <chatSphere@gmail.com>`,
     to: option.email,
     subject: option.subject,
     text: option.message,

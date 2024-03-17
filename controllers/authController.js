@@ -34,7 +34,7 @@ const signup = asyncHandler(async (req, res, next) => {
 
   const date = new Date();
   const dateString = date.toLocaleTimeString('en-EG');
-  const message = `Hello ${newUser.name},\n Glad to have you. \n We received a request to sign up on Chat in ${dateString}. \n ${resetCode} \n Please confirm this code to complete the sign up.\n Once confirmed, you'll be able to log in with your new account. \n Chat Team`;
+  const message = `Hello ${newUser.name},\n Glad to have you. \n We received a request to sign up on chatSphere in ${dateString}. \n ${resetCode} \n Please confirm this code to complete the sign up.\n Once confirmed, you'll be able to log in with your new account. \n chatSphere Team`;
   try {
     sendEmail({
       email: newUser.email,
@@ -94,10 +94,7 @@ const verifySignup = asyncHandler(async (req, res, next) => {
 
   await user.save({ validateBeforeSave: false });
 
-  res.status(201).json({
-    status: 'success',
-    message: 'Create Account Successfully',
-  });
+  Token.createToken(user, 201, req, res);
 });
 
 const login = asyncHandler(async (req, res, next) => {
@@ -128,7 +125,7 @@ const login = asyncHandler(async (req, res, next) => {
 
   const date = new Date();
   const dateString = date.toLocaleTimeString('en-EG');
-  const message = `Hi ${user.name},\n You Have Loged In ${dateString}. \n Chat Team`;
+  const message = `Hi ${user.name},\n You Have Loged In ${dateString}. \n chatSphere Team`;
 
   try {
     sendEmail({
@@ -199,7 +196,7 @@ const forgetPassword = asyncHandler(async (req, res, next) => {
 
   const date = new Date();
   const dateString = date.toLocaleTimeString('en-EG');
-  const message = `Hi ${user.name},\n We received a request to reset the password on your Chat Account in ${dateString}. \n ${resetCode} \n Enter this code to complete the reset. \n Thanks for helping us keep your account secure.\n The Chat Team`;
+  const message = `Hi ${user.name},\n We received a request to reset the password on your chatSphere Account in ${dateString}. \n ${resetCode} \n Enter this code to complete the reset. \n Thanks for helping us keep your account secure.\n The chatSphere Team`;
 
   try {
     sendEmail({

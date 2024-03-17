@@ -34,7 +34,8 @@ const userSchema = new mongoose.Schema(
     },
     photo: {
       type: String,
-      default: 'default.jpg',
+      default:
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_TpCgJhzyLLbEgYrTqXhtThvBV7xfGWKrhA&usqp=CAU',
     },
     age: {
       type: Number,

@@ -18,9 +18,9 @@ router
   .route('/updateMe')
   .patch(upload.single('photo'), uploadToCloud, userController.updateUser);
 
-router.route('/:id/follow').put(userController.followUser);
+router.route('/:id/follow').patch(userController.followUser);
 
-router.route('/:id/unFollow').put(userController.unFollowUser);
+router.route('/:id/unFollow').patch(userController.unFollowUser);
 
 router.route('/:id').get(userController.getUser);
 
