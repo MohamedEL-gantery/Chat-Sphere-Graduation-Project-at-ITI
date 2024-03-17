@@ -11,6 +11,12 @@ const sendErrorDev = (err, req, res) => {
     });
   }
 
+  if (!req.originalUrl.startsWith('/api')) {
+    return res.status(err.statusCode).json({
+      msg: err.message,
+    });
+  }
+
   // B) RENDERED WEBSITE
   console.error('ERROR 💥', err);
   return res.status(err.statusCode).render('error', {
@@ -78,6 +84,13 @@ const sendErrorProd = (err, req, res) => {
       message: err.message,
     });
   }
+
+  if (!req.originalUrl.startsWith('/api')) {
+    return res.status(err.statusCode).json({
+      msg: err.message,
+    });
+  }
+
   // B) Programming or other unknown error: don't leak error details
   // 1) Log error
   console.error('ERROR 💥', err);
