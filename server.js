@@ -13,6 +13,8 @@ const globalErrorHandler = require('./middlewares/errorMiddleware');
 const AppError = require('./utils/appError');
 const authRouter = require('./routes/authRoutes');
 const userRouter = require('./routes/userRoutes');
+const chatRouter = require('./routes/chatRoutes');
+const messageRouter = require('./routes/messageRoutes');
 
 const app = express();
 
@@ -55,6 +57,8 @@ app.use(helmet());
 
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/chats', chatRouter);
+app.use('/api/v1/messages', messageRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Cant find ${req.originalUrl} on this server`, 404));
@@ -62,7 +66,7 @@ app.all('*', (req, res, next) => {
 
 app.use(globalErrorHandler);
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 const URL = process.env.DATA_BASE_URL;
 
 DB(URL);

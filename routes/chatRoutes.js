@@ -1,11 +1,18 @@
-const express = require('express')
-const router = express.Router()
+const express = require('express');
+const authController = require('../controllers/authController');
+const chatController = require('../controllers/chatController');
 
-const {
-    createChat,
-    findChat,
-    findUserChats,
-    deleteChat } = require('../controllers/chatController')
-router.route('/chats').post( createChat).get( findUserChats)
-router.route('/chat/:id').get( findChat).delete( deleteChat)
-module.exports = router  
+const router = express.Router();
+
+router.use(authController.protected);
+
+router.route('/').post(chatController.createChat);
+
+router
+  .route('/:id')
+  .get(chatController.findUserChats)
+  .delete(chatController.deleteChat);
+
+router.route('/find/:senderId/:receivedId').get(chatController.findOneChat);
+
+module.exports = router;
