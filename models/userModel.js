@@ -65,10 +65,6 @@ const userSchema = new mongoose.Schema(
       validate: [validator.isDate, 'Enter A Valid Date'],
     },
     location: String,
-    isOnline: {
-      type: Boolean,
-      default: true,
-    },
     role: {
       type: String,
       enum: ['user', 'admin'],
@@ -79,12 +75,20 @@ const userSchema = new mongoose.Schema(
       default: true,
     },
     followers: {
-      type: Array,
-      default: [],
+      type: [
+        {
+          type: mongoose.Schema.ObjectId,
+          ref: 'User',
+        },
+      ],
     },
     followings: {
-      type: Array,
-      default: [],
+      type: [
+        {
+          type: mongoose.Schema.ObjectId,
+          ref: 'User',
+        },
+      ],
     },
     facebookId: String,
     googleId: String,
@@ -113,6 +117,11 @@ userSchema.pre('save', function (next) {
   if (!this.isModified('password') || this.isNew) return next();
 
   this.passwordChangedAt = Date.now();
+  next();
+});
+
+userSchema.pre(/^find/, function (next) {
+  this.find({ active: { $ne: false } });
   next();
 });
 

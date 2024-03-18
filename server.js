@@ -6,6 +6,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const { xss } = require('express-xss-sanitizer');
+const mongSanitize = require('express-mongo-sanitize');
 
 const DB = require('./dataBase');
 dotenv.config({ path: './config.env' });
@@ -17,6 +18,8 @@ const chatRouter = require('./routes/chatRoutes');
 const messageRouter = require('./routes/messageRoutes');
 
 const app = express();
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
 
 app.enable('trust proxy');
 process.on('uncaughtException', (err) => {
@@ -26,12 +29,13 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
-app.use(express.json());
-
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
   console.log(`MOD :${process.env.NODE_ENV} `);
 }
+
+// SET security HTTP Request
+app.use(helmet());
 
 app.use(
   cors({
@@ -45,15 +49,69 @@ app.use((req, res, next) => {
   next();
 });
 
+// Body parser , reading data from body into req.body
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
 
+// Data sanitization against NOSQl query injection
+app.use(mongSanitize());
+
+// Data sanitization against xxs
 app.use(xss());
 
 app.use(compression());
 
-app.use(helmet());
+//online and offline users
+let onlineUsers = [];
+
+io.on('connection', (socket) => {
+  console.log('new connection', socket.id);
+  //add new user
+  socket.on('addNewUser', (userId) => {
+    !onlineUsers.some((user) => user.userId === userId) &&
+      onlineUsers.push({
+        userId,
+        socketId: socket.id,
+      });
+    console.log('onlineUsers', onlineUsers);
+
+    io.emit('getOnlineUsers', onlineUsers);
+  });
+
+  // add message
+  socket.on('sendMessage', (message) => {
+    const user = onlineUsers.find(
+      (user) => user.userId === message.recipientId
+    );
+
+    console.log('sending from socket to: ', message.recipientId);
+    console.log('Message', message);
+
+    if (user) {
+      io.to(user.socketId).emit('getMessage', message);
+      io.to(user.socketId).emit('getNotification', {
+        senderId: message.senderId,
+        isRead: false,
+        date: new Date(),
+      });
+    }
+  });
+
+  socket.on('typing', () => {
+    socket.broadcast.emit('show-typing-status');
+  });
+
+  socket.on('stopTyping', () => {
+    socket.broadcast.emit('clear-typing-status');
+  });
+
+  socket.on('disconnect', () => {
+    onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
+
+    io.emit('getOnlineUsers', onlineUsers);
+  });
+});
 
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/users', userRouter);
@@ -70,7 +128,7 @@ const PORT = process.env.PORT || 5000;
 const URL = process.env.DATA_BASE_URL;
 
 DB(URL);
-app.listen(PORT, () => {
+const server = http.listen(PORT, () => {
   console.log(`SERVER RUNNING ON PORT : ${PORT}`);
 });
 
