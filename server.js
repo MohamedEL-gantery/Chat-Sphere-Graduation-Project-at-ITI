@@ -5,8 +5,8 @@ const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
-const { xss } = require('express-xss-sanitizer');
 const mongSanitize = require('express-mongo-sanitize');
+const { xss } = require('express-xss-sanitizer');
 
 const DB = require('./dataBase');
 dotenv.config({ path: './config.env' });
