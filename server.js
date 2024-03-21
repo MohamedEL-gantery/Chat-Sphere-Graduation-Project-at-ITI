@@ -7,6 +7,11 @@ const helmet = require('helmet');
 const compression = require('compression');
 const mongSanitize = require('express-mongo-sanitize');
 const { xss } = require('express-xss-sanitizer');
+const passport = require('passport');
+const session = require('express-session');
+const MemoryStore = require('memorystore')(session);
+
+require('./controllers/googleAuth');
 
 const DB = require('./dataBase');
 dotenv.config({ path: './config.env' });
@@ -49,6 +54,22 @@ app.use((req, res, next) => {
   next();
 });
 
+//session
+app.use(
+  session({
+    cookie: { maxAge: 86400000 },
+    store: new MemoryStore({
+      checkPeriod: 86400000, // prune expired entries every 24h
+    }),
+    resave: false,
+    saveUninitialized: true,
+    secret: 'Task-Tech App',
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Body parser , reading data from body into req.body
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
@@ -61,6 +82,27 @@ app.use(mongSanitize());
 app.use(xss());
 
 app.use(compression());
+
+passport.serializeUser(function (user, done) {
+  done(null, user);
+});
+
+passport.deserializeUser(function (obj, done) {
+  done(null, obj);
+});
+
+app.get('/auth/failure', (req, res) => {
+  res.status(500).json({
+    status: 'fail',
+    message: 'somthing went wrong',
+  });
+});
+
+app.get('/', (req, res) => {
+  res.send(
+    '<a href="/api/v1/auth/google">Authenticate with Google </a> <br/> <a href="/api/v1/auth/facebook">Authenticate with Facebook </a>'
+  );
+});
 
 //online and offline users
 let onlineUsers = [];
@@ -117,6 +159,20 @@ app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/chats', chatRouter);
 app.use('/api/v1/messages', messageRouter);
+
+//auth with google
+app.get(
+  '/api/v1/auth/google',
+  passport.authenticate('google', { scope: ['email', 'profile'] })
+);
+
+app.get(
+  '/google/callback',
+  passport.authenticate('google', {
+    successRedirect: process.env.BASE_URL,
+    failureRedirect: '/auth/failure',
+  })
+);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Cant find ${req.originalUrl} on this server`, 404));

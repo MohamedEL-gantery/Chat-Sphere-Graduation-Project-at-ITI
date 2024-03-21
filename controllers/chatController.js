@@ -29,9 +29,11 @@ const createChat = asyncHandler(async (req, res, next) => {
 });
 
 const findUserChats = asyncHandler(async (req, res, next) => {
-  const userId = req.params.id;
+  const userId = req.user.id;
 
-  const chats = await Chat.find({ members: { $in: [userId] } });
+  const chats = await Chat.find({ members: { $in: [userId] } }).sort({
+    updatedAt: -1,
+  });
 
   if (chats.length === 0) {
     return next(new AppError('No Chat Found', 404));
@@ -74,9 +76,48 @@ const deleteChat = asyncHandler(async (req, res, next) => {
   });
 });
 
+const createGroupChat = asyncHandler(async (req, res, next) => {
+  var members = JSON.parse(req.body.members);
+
+  if (members.length < 2) {
+    return res
+      .status(400)
+      .send('More than 2 users are required to form a group chat');
+  }
+
+  members.push(req.user.id);
+  const groupName = req.body;
+
+  if (users.length < 2) {
+    return next(new AppError('More Than Two Users To Create Group', 400));
+  }
+
+  // const existGroupChat = await Chat.find({ members: { $in: [usersId] } });
+
+  // if (existGroupChat) {
+  //   return res.status(200).json({
+  //     status: 'success',
+  //     data: existGroupChat,
+  //   });
+  // }
+
+  const newGroup = await Chat.create({
+    members,
+    groupChat: true,
+    groupName,
+    groupAdmin: req.user.id,
+  });
+
+  res.status(201).json({
+    status: 'success',
+    data: newGroup,
+  });
+});
+
 module.exports = {
   createChat,
   findUserChats,
   findOneChat,
   deleteChat,
+  createGroupChat,
 };

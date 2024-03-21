@@ -6,13 +6,15 @@ const router = express.Router();
 
 router.use(authController.protected);
 
-router.route('/').post(chatController.createChat);
-
 router
-  .route('/:id')
-  .get(chatController.findUserChats)
-  .delete(chatController.deleteChat);
+  .route('/')
+  .post(chatController.createChat)
+  .get(chatController.findUserChats);
+
+router.route('/:id').delete(chatController.deleteChat);
 
 router.route('/find/:senderId/:receivedId').get(chatController.findOneChat);
+
+router.route('/createGroup').post(chatController.createGroupChat);
 
 module.exports = router;
