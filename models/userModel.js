@@ -90,7 +90,6 @@ const userSchema = new mongoose.Schema(
         },
       ],
     },
-    facebookId: String,
     googleId: String,
     passwordChangedAt: Date,
     passwordResetExpires: Date,

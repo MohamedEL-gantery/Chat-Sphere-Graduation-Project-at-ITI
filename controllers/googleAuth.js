@@ -1,7 +1,7 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth2').Strategy;
 const User = require('../models/userModel');
-const createSendToken = require('../utils/createToken');
+const SendToken = require('../utils/createToken');
 require('dotenv').config({ path: './config.env' });
 
 passport.use(
@@ -23,18 +23,26 @@ passport.use(
           googleId: profile.id,
           photo: profile.photos[0].value,
           password: process.env.PASSWORD_GOOGLE,
-          PasswordConfirm: process.env.PASSWORD_GOOGLE,
+          passwordConfirm: process.env.PASSWORD_GOOGLE,
           accessToken,
           refreshToken,
         });
         // 3) If everything is ok, generate token
-        createSendToken(newUser, 201, request, request.res);
+        SendToken.createToken(newUser, 201, request, request.res);
         console.log('user saved successfully to DB');
       } else {
         console.log('user already exists');
         // 3) If everything is ok, generate token
-        createSendToken(user, 200, request, request.res);
+        SendToken.createToken(user, 200, request, request.res);
       }
     }
   )
 );
+
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+
+passport.deserializeUser((user, done) => {
+  done(null, user);
+});
