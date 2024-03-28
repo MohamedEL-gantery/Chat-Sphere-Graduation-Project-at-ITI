@@ -10,7 +10,6 @@ const { xss } = require('express-xss-sanitizer');
 const passport = require('passport');
 const session = require('express-session');
 const MemoryStore = require('memorystore')(session);
-const { createProxyMiddleware } = require('http-proxy-middleware');
 
 require('./controllers/googleAuth');
 
@@ -49,23 +48,8 @@ if (process.env.NODE_ENV === 'development') {
 // SET security HTTP Request
 app.use(helmet());
 
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Credentials', true);
-  next();
-});
-
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader(
-    'Access-Control-Allow-Methods',
-    'POST, GET, PUT, Patch ,Delete'
-  );
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  next();
-});
-
 const corsOptions = {
-  origin: ['http://localhost:5173', 'https://accounts.google.com'],
+  origin: ['http://localhost:5173'],
   credentials: true,
   optionSuccessStatus: 200,
 };
@@ -91,9 +75,9 @@ app.get(
   passport.authenticate('google', { scope: ['email', 'profile'] })
 );
 
-app.get('/', (req, res) => {
-  res.send('<a href="/auth/google">Authenticate with Google </a>');
-});
+// app.get('/', (req, res) => {
+//   res.send('<a href="/auth/google">Authenticate with Google </a>');
+// });
 
 app.get('/auth/google/failure', (req, res) => {
   res.status(500).json({
@@ -123,17 +107,6 @@ app.use(xss());
 
 app.use(compression());
 
-app.use(
-  '/auth/google',
-  createProxyMiddleware({
-    target: 'https://accounts.google.com',
-    changeOrigin: true,
-    pathRewrite: {
-      '^/auth/google': '/o/oauth2/v2/auth',
-    },
-  })
-);
-
 //online and offline users
 let onlineUsers = [];
 
@@ -157,7 +130,6 @@ io.on('connection', (socket) => {
       (user) => user.userId === message.recipientId
     );
 
-    console.log('sending from socket to: ', message.recipientId);
     console.log('Message', message);
 
     if (user) {
@@ -192,7 +164,6 @@ app.use('/api/v1/messages', messageRouter);
 
 app.all('*', (req, res, next, err) => {
   next(new AppError(`Cant find ${req.originalUrl} on this server`, 404));
-  console.log(err.stack);
 });
 
 app.use(globalErrorHandler);

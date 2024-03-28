@@ -8,18 +8,18 @@ const chatSchema = new mongoose.Schema(
         ref: 'User',
       },
     ],
-    groupChat: {
-      type: Boolean,
-      default: false,
-    },
-    groupName: {
-      type: String,
-      trim: true,
-    },
-    groupAdmin: {
-      type: mongoose.Schema.ObjectId,
-      ref: 'User',
-    },
+    // groupChat: {
+    //   type: Boolean,
+    //   default: false,
+    // },
+    // groupName: {
+    //   type: String,
+    //   trim: true,
+    // },
+    // groupAdmin: {
+    //   type: mongoose.Schema.ObjectId,
+    //   ref: 'User',
+    // },
   },
   { timestamps: true }
 );

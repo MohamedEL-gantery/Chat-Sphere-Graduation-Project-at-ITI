@@ -8,9 +8,7 @@ cloudinary.config({
 });
 
 const uploadToCloud = (req, res, next) => {
-  if (!req.file) {
-    return next();
-  }
+  if (!req.file) return next();
 
   cloudinary.uploader
     .upload_stream(
