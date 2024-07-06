@@ -2,7 +2,7 @@
 
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?logo=javascript&logoColor=yellow)
 
-![Mongoose](https://img.shields.io/badge/Mongoose-5.13.6-880000?logo=mongoose&logoColor=red)
+![Mongoose](https://img.shields.io/badge/Mongoose-8.2.1-880000?logo=mongoose&logoColor=red)
 
 # Quick Start Node.js Project with JavaScript and Mongoose
 
